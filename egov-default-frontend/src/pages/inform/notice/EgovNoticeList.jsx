@@ -2,50 +2,55 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 import * as EgovNet from 'api/egovFetch';
+import { NOTICE_BBS_ID } from 'config';
 import URL from 'constants/url';
 
 import EgovPaging from 'components/EgovPaging';
-import { default as EgovLeftNav } from 'components/leftmenu/EgovLeftNavAdmin';
+import { default as EgovLeftNav } from 'components/leftmenu/EgovLeftNavInform';
 
 import { itemIdxByPage } from 'utils/calc';
 
-function EgovAdminBoardList(props) {
-    console.group("EgovAdminBoardList");
-    console.log("EgovAdminBoardList [props] : ", props);
+function EgovNoticeList(props) {
+    console.group("EgovNoticeList");
+    console.log("EgovNoticeList [props] : ", props);
 
     const location = useLocation();
-    console.log("EgovAdminBoardList [location] : ", location);
+    console.log("EgovNoticeList [location] : ", location);
 
-    // eslint-disable-next-line no-unused-vars
-    const [searchCondition, setSearchCondition] = useState(location.state?.searchCondition || { pageIndex: 1, searchCnd: '0', searchWrd: '' });// 기존 조회에서 접근 했을 시 || 신규로 접근 했을 시
-    const [paginationInfo, setPaginationInfo] = useState({});
-
-    const cndRef = useRef();
+	const cndRef = useRef();
     const wrdRef = useRef();
+
+    const bbsId = location.state?.bbsId || NOTICE_BBS_ID; 
+
+	// eslint-disable-next-line no-unused-vars
+    const [searchCondition, setSearchCondition] = useState(location.state?.searchCondition || { bbsId: bbsId, pageIndex: 1, searchCnd: '0', searchWrd: '' });// 기존 조회에서 접근 했을 시 || 신규로 접근 했을 시
+    const [masterBoard, setMasterBoard] = useState({});
+    const [user, setUser] = useState({});
+    const [paginationInfo, setPaginationInfo] = useState({});
 
     const [listTag, setListTag] = useState([]);
 
-    const retrieveList = useCallback((srchCnd) => {
-        console.groupCollapsed("EgovAdminBoardList.retrieveList()");
+    const retrieveList = useCallback((searchCondition) => {
+        console.groupCollapsed("EgovNoticeList.retrieveList()");
 
-        const retrieveListURL = '/bbsMaster'+EgovNet.getQueryString(srchCnd);
-        
+        const retrieveListURL = '/board'+EgovNet.getQueryString(searchCondition);;
         const requestOptions = {
             method: "GET",
             headers: {
                 'Content-type': 'application/json',
-                
             }
         }
 
         EgovNet.requestFetch(retrieveListURL,
             requestOptions,
             (resp) => {
+                setMasterBoard(resp.result.brdMstrVO);
                 setPaginationInfo(resp.result.paginationInfo);
+                setUser(resp.result.user);
 
                 let mutListTag = [];
-                listTag.push(<p className="no_data" key="0">검색된 결과가 없습니다.</p>); // 게시판 목록 초기값
-
+                mutListTag.push(<p className="no_data" key="0">검색된 결과가 없습니다.</p>); // 게시판 목록 초기값
+                
                 const resultCnt = parseInt(resp.result.resultCnt);
                 const currentPageNo = resp.result.paginationInfo.currentPageNo;
                 const pageSize = resp.result.paginationInfo.pageSize;
@@ -57,34 +62,43 @@ function EgovAdminBoardList(props) {
 
                     mutListTag.push(
                         <Link
-                            to=
-                            state=                            key={listIdx}
-                            className="list_item">
+                            to={{pathname: URL.INFORM_NOTICE_DETAIL}}
+                            state={{
+                                nttId: item.nttId,
+                                bbsId: item.bbsId,
+                                searchCondition: searchCondition
+}}                            key={listIdx}
+                            className="list_item" >
                             <div>{listIdx}</div>
-                            <div>{item.bbsNm}</div>
-                            <div>{item.bbsTyCodeNm}</div>
-                            <div>{item.bbsAttrbCodeNm}</div>
+                            {(item.replyLc * 1 ? true : false) &&
+                                <div className="al reply">
+                                    {item.nttSj}
+                                </div>}
+                            {(item.replyLc * 1 ? false : true) &&
+                                <div className="al">
+                                    {item.nttSj}
+                                </div>}
+                            <div>{item.frstRegisterNm}</div>
                             <div>{item.frstRegisterPnttm}</div>
-                            <div>{item.useAt === "Y" ? "사용" : "사용안함"}</div>
+                            <div>{item.inqireCo}</div>
                         </Link>
                     );
                 });
-                
                 setListTag(mutListTag);
             },
             function (resp) {
                 console.log("err response : ", resp);
             }
         );
-        console.groupEnd("EgovAdminBoardList.retrieveList()");
-    },[listTag, searchCondition]);
+        console.groupEnd("EgovNoticeList.retrieveList()");
+    },[]);
 
     useEffect(() => {
         retrieveList(searchCondition);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    console.groupEnd("EgovAdminBoardList");
+    console.groupEnd("EgovNoticeList");
     return (
         <div className="container">
             <div className="c_wrap">
@@ -92,8 +106,8 @@ function EgovAdminBoardList(props) {
                 <div className="location">
                     <ul>
                         <li><Link to={URL.MAIN} className="home">Home</Link></li>
-                        <li><Link to={URL.ADMIN}>사이트관리</Link></li>
-                        <li>게시판생성 관리</li>
+                        <li><Link to={URL.INFORM}>알림마당</Link></li>
+                        <li>{masterBoard && masterBoard.bbsNm}</li>
                     </ul>
                 </div>
                 {/* <!--// Location --> */}
@@ -103,35 +117,34 @@ function EgovAdminBoardList(props) {
                     <EgovLeftNav></EgovLeftNav>
                     {/* <!--// Navigation --> */}
 
-                    <div className="contents BOARD_CREATE_LIST" id="contents">
+                    <div className="contents NOTICE_LIST" id="contents">
                         {/* <!-- 본문 --> */}
 
                         <div className="top_tit">
-                            <h1 className="tit_1">사이트관리</h1>
+                            <h1 className="tit_1">알림마당</h1>
                         </div>
 
-                        <h2 className="tit_2">게시판생성 관리</h2>
+                        <h2 className="tit_2">{masterBoard && masterBoard.bbsNm}</h2>
 
                         {/* <!-- 검색조건 --> */}
                         <div className="condition">
                             <ul>
                                 <li className="third_1 L">
-                                    <span className="lb">검색유형선택</span>
-                                    <label className="f_select" htmlFor="searchCnd">
-                                        <select id="searchCnd" name="searchCnd" title="검색유형선택" ref={cndRef}
+                                    <label className="f_select" htmlFor="sel1">
+                                        <select id="sel1" title="조건" defaultValue={searchCondition.searchCnd} ref={cndRef}
                                             onChange={e => {
                                                 cndRef.current.value = e.target.value; 
                                             }}
                                         >
-                                            <option value="0">게시판명</option>
-                                            <option value="1">게시판유형</option>
+                                            <option value="0">제목</option>
+                                            <option value="1">내용</option>
+                                            <option value="2">작성자</option>
                                         </select>
                                     </label>
                                 </li>
                                 <li className="third_2 R">
-                                    <span className="lb">검색어</span>
-                                    <span className="f_search w_400">
-                                        <input type="text" name="" defaultValue={searchCondition && searchCondition.searchWrd} placeholder="" ref={wrdRef}
+                                    <span className="f_search w_500">
+                                        <input type="text" name="" defaultValue={searchCondition.searchWrd} placeholder="" ref={wrdRef}
                                             onChange={e => {
                                                 wrdRef.current.value = e.target.value;
                                             }}
@@ -142,22 +155,23 @@ function EgovAdminBoardList(props) {
                                             }}>조회</button>
                                     </span>
                                 </li>
-                                <li>
-                                    <Link to={URL.ADMIN_BOARD_CREATE} className="btn btn_blue_h46 pd35">등록</Link>
-                                </li>
+                                {user.id && masterBoard.bbsUseFlag === 'Y' &&
+                                    <li>
+                                        <Link to={URL.INFORM_NOTICE_CREATE} state={{bbsId: bbsId}} className="btn btn_blue_h46 pd35">등록</Link>
+                                    </li>
+                                }
                             </ul>
                         </div>
                         {/* <!--// 검색조건 --> */}
 
                         {/* <!-- 게시판목록 --> */}
-                        <div className="board_list BRD006">
+                        <div className="board_list BRD002">
                             <div className="head">
                                 <span>번호</span>
-                                <span>게시판명</span>
-                                <span>게시판유형</span>
-                                <span>게시판속성</span>
-                                <span>생성일</span>
-                                <span>사용여부</span>
+                                <span>제목</span>
+                                <span>작성자</span>
+                                <span>작성일</span>
+                                <span>조회수</span>
                             </div>
                             <div className="result">
                                 {listTag}
@@ -178,15 +192,10 @@ function EgovAdminBoardList(props) {
                 </div>
             </div>
         </div>
-
-
-
-
-
-
-
-
     );
 }
 
-export default EgovAdminBoardList;
+
+export default EgovNoticeList;
+
+
