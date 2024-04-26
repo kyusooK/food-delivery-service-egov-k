@@ -62,15 +62,12 @@ function EgovNoticeList(props) {
                         <Link
                             to={{pathname: "/orderManagement/OrderDetail"}}
                             state={{
-                                nttId: item.orderid,
+                                orderId: item._links.self.href.split('/').pop(),
                                 searchCondition: searchCondition
 }}                            key={listIdx}
                             className="list_item" >
-                            <div>{listIdx}</div>
-                            
-
-                            <div>{item.orderid }</div>
-                            <div>{item.restaurantid }</div>
+                            <div>{item._links.self.href.split('/').pop()}</div>
+                            <div>{item.restaurantId }</div>
                             <div>{item.status }</div>
                             <div>{item.statustype }</div>
 
@@ -154,7 +151,6 @@ function EgovNoticeList(props) {
                                     </li>
                             </ul>
                         </div>
-                        {/* <!--// 검색조건 --> */}
 
                         {/* <!-- 게시판목록 --> */}
                         <div className="board_list BRD002">
@@ -163,7 +159,7 @@ function EgovNoticeList(props) {
                                 <span>Order ID</span>
                                 <span>Restaurant ID</span>
                                 <span>Order Status</span>
-                                <span>Order Status 유형</span>
+                                <span>Order Status Type</span>
                             
                             </div>
                             <div className="result">

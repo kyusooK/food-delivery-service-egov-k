@@ -7,6 +7,7 @@ import * as EgovNet from 'api/egovFetch'
 import { NOTICE_BBS_ID } from 'config'
 import CODE from 'constants/code'
 import URL from 'constants/url'
+import axios from 'axios';
 
 import EgovAttachFile from 'components/EgovAttachFile'
 import { default as EgovLeftNav } from 'components/leftmenu/EgovLeftNavInform'
@@ -36,7 +37,7 @@ function EgovNoticeEdit(props) {
                     ...modeInfo,
                     modeTitle: "등록",
                     method: "POST",
-                    editURL: '/board'
+                    editURL: '/orders'
                 });
                 break;
             case CODE.MODE_MODIFY:
@@ -44,7 +45,7 @@ function EgovNoticeEdit(props) {
                     ...modeInfo,
                     modeTitle: "수정",
                     method: "PUT",
-                    editURL: `/board/${nttId}`
+                    editURL: `/orders/${nttId}`
                 });
                 break;
             case CODE.MODE_REPLY:
@@ -67,24 +68,32 @@ function EgovNoticeEdit(props) {
             //console.log("boardDetail [%s] ", key, boardDetail[key]);
         }
 
-        if (bbsFormVaildator(formData)) {
+        // if (bbsFormVaildator(formData)) {
             const requestOptions = {
                 method: modeInfo.method,
                 body: formData
             }
     
-            EgovNet.requestFetch(modeInfo.editURL,
-                requestOptions,
-                (resp) => {
-                    if (Number(resp.resultCode) === Number(CODE.RCV_SUCCESS)) {
-                        navigate(URL.INFORM_NOTICE, {state:{bbsId : bbsId}});
-                    } else {
-                        // alert("ERR : " + resp.message);
-                        navigate({pathname: URL.ERROR}, {state: {msg : resp.resultMessage}});
-                    }
+            const entity = {
+                orderId: boardDetail.orderId,
+                restaurantId: boardDetail.restaurantId,
+                status: boardDetail.status,
+                statusType: boardDetail.statusType 
+            };
+
+            axios.post('/orders', entity)
+            .then(response => {
+                const resp = response.data;
+                if (resp._links.self.href.split('/').pop()) {
+                    navigate('/orderManagement/orders');
+                } else {
+                    navigate({pathname: URL.ERROR}, {state: {msg: resp.resultMessage}});
                 }
-            );
-        };
+            })
+            .catch(error => {
+                console.error('Request failed:', error);
+                navigate({pathname: URL.ERROR}, {state: {msg: error.message}});
+            });
     };
 
 	const Location = React.memo(function Location(masterBoard) {
@@ -134,7 +143,7 @@ function EgovNoticeEdit(props) {
                                 </dt>
                                 <dd>
                                     <input className="f_input2 w_full" id="orderid" name="orderid" type="text"
-                                        onChange={e => setBoardDetail({ ...boardDetail, orderid: e.target.value })}
+                                        onChange={e => setBoardDetail({ ...boardDetail, orderId: e.target.value })}
                                         maxLength="60" />
                                 </dd>
                             </dl>
@@ -144,7 +153,7 @@ function EgovNoticeEdit(props) {
                                 </dt>
                                 <dd>
                                     <input className="f_input2 w_full" id="restaurantid" name="restaurantid" type="text"
-                                        onChange={e => setBoardDetail({ ...boardDetail, restaurantid: e.target.value })}
+                                        onChange={e => setBoardDetail({ ...boardDetail, restaurantId: e.target.value })}
                                         maxLength="60" />
                                 </dd>
                             </dl>
@@ -164,7 +173,7 @@ function EgovNoticeEdit(props) {
                                 </dt>
                                 <dd>
                                     <input className="f_input2 w_full" id="statustype" name="statustype" type="text"
-                                        onChange={e => setBoardDetail({ ...boardDetail, statustype: e.target.value })}
+                                        onChange={e => setBoardDetail({ ...boardDetail, statusType: e.target.value })}
                                         maxLength="60" />
                                 </dd>
                             </dl>

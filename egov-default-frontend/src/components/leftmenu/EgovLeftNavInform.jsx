@@ -9,12 +9,9 @@ function EgovLeftNavInform() {
     return (
         <div className="nav">
             <div className="inner">
-                <h2>알림마당</h2>
+                <h2 style={{fontSize: "20px"}}>OrderManagement</h2>
                 <ul className="menu4">
-                    <li><NavLink to={URL.INFORM_DAILY} className={({ isActive }) => (isActive ? "cur" : "")}>오늘의행사</NavLink></li>
-                    <li><NavLink to={URL.INFORM_WEEKLY} className={({ isActive }) => (isActive ? "cur" : "")}>금주의행사</NavLink></li>
-                    <li><NavLink to={URL.INFORM_NOTICE} className={({ isActive }) => (isActive ? "cur" : "")}>공지사항</NavLink></li>
-                    <li><NavLink to={URL.INFORM_GALLERY} className={({ isActive }) => (isActive ? "cur" : "")}>사이트갤러리</NavLink></li>
+                    <li><NavLink to={'/orderManagement/orders'} className={({ isActive }) => (isActive ? "cur" : "")}>Order</NavLink></li>
                 </ul>
             </div>
         </div>

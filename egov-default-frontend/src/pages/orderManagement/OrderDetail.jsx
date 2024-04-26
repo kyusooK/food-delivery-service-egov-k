@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import * as EgovNet from 'api/egovFetch'
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import TextField from '@mui/material/TextField';
+
+import axios from 'axios';
+
+
 import { NOTICE_BBS_ID } from 'config'
 import CODE from 'constants/code'
 import URL from 'constants/url'
@@ -19,9 +28,12 @@ function EgovNoticeDetail(props) {
     const location = useLocation();
     console.log("EgovNoticeDetail [location] : ", location);
 
-    const bbsId = location.state.bbsId || NOTICE_BBS_ID;
-    const nttId = location.state.nttId;
+    //const bbsId = location.state.bbsId || NOTICE_BBS_ID;
+    const orderId = location.state.orderId;
     const searchCondition = location.state.searchCondition;
+
+    const [open, setOpen] = useState(false);
+    const condition = true; 
 
     const [masterBoard, setMasterBoard] = useState({});
     const [user, setUser] = useState({});
@@ -29,7 +41,7 @@ function EgovNoticeDetail(props) {
     const [boardAttachFiles, setBoardAttachFiles] = useState();
 
     const retrieveDetail = () => {
-        const retrieveDetailURL = `/board/${bbsId}/${nttId}`;
+        const retrieveDetailURL = `/orders/${orderId}`;
         const requestOptions = {
             method: "GET",
             headers: {
@@ -39,16 +51,14 @@ function EgovNoticeDetail(props) {
         EgovNet.requestFetch(retrieveDetailURL,
             requestOptions,
             function (resp) {
-                setMasterBoard(resp.result.brdMstrVO);
-                setBoardDetail(resp.result.boardVO);
-                setUser(resp.result.user);
-                setBoardAttachFiles(resp.result.resultFiles);
+    
+                setBoardDetail(resp);
             }
         );
     }
 
     const onClickDeleteBoardArticle = (bbsId, nttId) => {
-        const deleteBoardURL = `/board/${bbsId}/${nttId}`;
+        const deleteBoardURL = `/orders/${orderId}`;
         
         const requestOptions = {
             method: "PATCH",
@@ -79,6 +89,26 @@ function EgovNoticeDetail(props) {
     
     console.groupEnd("EgovNoticeDetail");
 
+    function acceptOrder(){
+        const entity = {
+            orderId: orderId
+        }
+
+        axios.put(`/orders/${orderId}/acceptorder`, entity)
+        // .then(response => {
+        //     const resp = response.data;
+        //     if (!resp._links.self.href.split('/').pop()) {
+        //         navigate({pathname: URL.ERROR}, {state: {msg: resp.resultMessage}});
+        //     } 
+        // })
+        setOpen(false);
+    }
+
+    function deleteList(){
+        axios.delete(`/orders/${orderId}`)
+        navigate('/orderManagement/orders');
+    }
+
     return (
         <div className="container">
             <div className="c_wrap">
@@ -101,7 +131,7 @@ function EgovNoticeDetail(props) {
                         {/* <!-- 본문 --> */}
 
                         <div className="top_tit">
-                            <h1 className="tit_1">알림마당</h1>
+                            <h1 className="tit_1">Order</h1>
                         </div>
 
                         <h2 className="tit_2">{masterBoard && masterBoard.bbsNm}</h2>
@@ -109,66 +139,83 @@ function EgovNoticeDetail(props) {
                         {/* <!-- 게시판 상세보기 --> */}
                         <div className="board_view">
                             <div className="board_view_top">
-                                <div className="tit">{boardDetail && boardDetail.nttSj}</div>
+                                <div className="tit">{boardDetail && orderId}</div>
                                 <div className="info">
                                     <dl>
-                                        <dt>작성자</dt>
-                                        <dd>{boardDetail && boardDetail.frstRegisterNm}</dd>
+                                        <dt>Status</dt>
+                                        <dd>{boardDetail && boardDetail.status}</dd>
                                     </dl>
-                                    <dl>
-                                        <dt>작성일</dt>
-                                        <dd>{boardDetail && boardDetail.frstRegisterPnttm}</dd>
-                                    </dl>
-                                    <dl>
-                                        <dt>조회수</dt>
-                                        <dd>{boardDetail && boardDetail.inqireCo}</dd>
-                                    </dl>
+                                    
                                 </div>
                             </div>
 
-                            <div className="board_article">
-                                <textarea name="" cols="30" rows="10" readOnly="readonly" defaultValue={boardDetail && boardDetail.nttCn}></textarea>
-                            </div>
-                            <div className="board_attach">
-                                {/* 답글이 아니고 게시판 파일 첨부 가능 상태에서만 첨부파일 컴포넌트 노출 */}
-                                {(boardDetail.parnts === '0') && masterBoard.fileAtchPosblAt === 'Y' && <EgovAttachFile boardFiles={boardAttachFiles} />}
-                            </div>
-
+                          
 
                             <div className="board_btn_area">
-                                {user.id && masterBoard.bbsUseFlag === 'Y' &&
+                                {orderId && masterBoard.bbsUseFlag === 'Y' &&
                                     <div className="left_col btn3">
                                         <Link to={{pathname: URL.INFORM_NOTICE_MODIFY}}
                                             state={{
-                                                nttId: nttId,
-                                                bbsId: bbsId
+                                                orderId: orderId
 }}                                            className="btn btn_skyblue_h46 w_100">수정</Link>
                                         <button className="btn btn_skyblue_h46 w_100" onClick={(e) => {
                                             e.preventDefault();
                                             onClickDeleteBoardArticle(boardDetail.bbsId, boardDetail.nttId);
                                         }}>삭제</button>
-										{masterBoard.replyPosblAt === 'Y' &&
-                                        <Link to={{pathname: URL.INFORM_NOTICE_REPLY}}
-                                            state={{
-                                                nttId: nttId,
-                                                bbsId: bbsId
-}}                                            className="btn btn_skyblue_h46 w_100">답글작성</Link>
-										}
+										
                                     </div>
                                 }
-
-                                <div className="right_col btn1">
-                                    <Link to={{pathname: URL.INFORM_NOTICE}}
-                                        state={{
-                                            nttId: nttId,
-                                            bbsId: bbsId,
-                                            searchCondition: searchCondition
-}}                                        className="btn btn_blue_h46 w_100">목록</Link>
+                                <div style={{ display: "flex", flexDirection: "row"}}>
+                                    <div style={{marginTop: "5px"}}>
+                                        <button className="btn btn_blue_h46 w_100"
+                                         onClick={() => {
+                                            if (condition) {  
+                                            setOpen(true);
+                                            }
+                                        }}>
+                                            AcceptOrder
+                                        </button>
+                                  </div>
+                                    <div style={{marginTop: "5px", marginLeft: "10px"}}>
+                                        <Link to="/orderManagement/orders"
+                                            className="btn btn_blue_h46 w_100">RejectOrder</Link>
+                                    </div>
+                                </div>
+                                <div className="right_col btn1" style={{marginTop: "5px"}}>
+                                    <Link to="/orderManagement/orders"
+                                        className="btn btn_blue_h46 w_100">목록</Link>
+                                </div>
+                                <div className="right_col btn1" style={{marginTop: "5px", marginRight: "11%"}}>
+                                    <button
+                                        onClick={deleteList}
+                                        className="btn btn_blue_h46 w_100">삭제</button>
                                 </div>
                             </div>
                         </div>
                         {/* <!-- 게시판 상세보기 --> */}
-
+                        <div>
+                        <Dialog open={open} onClose={() => setOpen(false)}>
+                            <DialogTitle>AcceptOrder</DialogTitle>
+                            <DialogContent>
+                                <TextField 
+                                    autoFocus
+                                    margin="dense"
+                                    id="orderId"
+                                    label="Order Id"
+                                    type="text"
+                                    fullWidth
+                                />
+                            </DialogContent>
+                            <DialogActions>
+                                <button onClick={() => setOpen(false)} className="btn btn_blue_h46 w_100">
+                                    Cancel
+                                </button>
+                                <button onClick={acceptOrder} className="btn btn_blue_h46 w_100">
+                                    Accept Order
+                                </button>
+                            </DialogActions>
+                        </Dialog>
+                        </div>
                         {/* <!--// 본문 --> */}
                     </div>
                 </div>
