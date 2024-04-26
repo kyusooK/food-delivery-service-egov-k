@@ -157,7 +157,7 @@ function EgovNoticeList(props) {
                                 </li>
                                 {user.id && masterBoard.bbsUseFlag === 'Y' &&
                                     <li>
-                                        <Link to={URL.INFORM_NOTICE_CREATE} state={[object Object]} className="btn btn_blue_h46 pd35">등록</Link>
+                                        <Link to={URL.INFORM_NOTICE_CREATE} state={{bbsId: bbsId}} className="btn btn_blue_h46 pd35">등록</Link>
                                     </li>
                                 }
                             </ul>
