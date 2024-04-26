@@ -138,22 +138,32 @@ function EgovNoticeDetail(props) {
                             <div className="board_btn_area">
                                 {user.id && masterBoard.bbsUseFlag === 'Y' &&
                                     <div className="left_col btn3">
-                                        <Link to=
-                                            state=                                            className="btn btn_skyblue_h46 w_100">수정</Link>
+                                        <Link to={{pathname: URL.INFORM_NOTICE_MODIFY}}
+                                            state={{
+                                                nttId: nttId,
+                                                bbsId: bbsId
+}}                                            className="btn btn_skyblue_h46 w_100">수정</Link>
                                         <button className="btn btn_skyblue_h46 w_100" onClick={(e) => {
                                             e.preventDefault();
                                             onClickDeleteBoardArticle(boardDetail.bbsId, boardDetail.nttId);
                                         }}>삭제</button>
 										{masterBoard.replyPosblAt === 'Y' &&
-                                        <Link to=
-                                            state=                                            className="btn btn_skyblue_h46 w_100">답글작성</Link>
+                                        <Link to={{pathname: URL.INFORM_NOTICE_REPLY}}
+                                            state={{
+                                                nttId: nttId,
+                                                bbsId: bbsId
+}}                                            className="btn btn_skyblue_h46 w_100">답글작성</Link>
 										}
                                     </div>
                                 }
 
                                 <div className="right_col btn1">
-                                    <Link to=
-                                        state=                                        className="btn btn_blue_h46 w_100">목록</Link>
+                                    <Link to={{pathname: URL.INFORM_NOTICE}}
+                                        state={{
+                                            nttId: nttId,
+                                            bbsId: bbsId,
+                                            searchCondition: searchCondition
+}}                                        className="btn btn_blue_h46 w_100">목록</Link>
                                 </div>
                             </div>
                         </div>
