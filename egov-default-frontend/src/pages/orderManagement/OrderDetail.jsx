@@ -152,19 +152,6 @@ function EgovNoticeDetail(props) {
                           
 
                             <div className="board_btn_area">
-                                {orderId && masterBoard.bbsUseFlag === 'Y' &&
-                                    <div className="left_col btn3">
-                                        <Link to={{pathname: URL.INFORM_NOTICE_MODIFY}}
-                                            state={{
-                                                orderId: orderId
-}}                                            className="btn btn_skyblue_h46 w_100">수정</Link>
-                                        <button className="btn btn_skyblue_h46 w_100" onClick={(e) => {
-                                            e.preventDefault();
-                                            onClickDeleteBoardArticle(boardDetail.bbsId, boardDetail.nttId);
-                                        }}>삭제</button>
-										
-                                    </div>
-                                }
                                 <div style={{ display: "flex", flexDirection: "row"}}>
                                     <div style={{marginTop: "5px"}}>
                                         <button className="btn btn_blue_h46 w_100"
@@ -194,27 +181,27 @@ function EgovNoticeDetail(props) {
                         </div>
                         {/* <!-- 게시판 상세보기 --> */}
                         <div>
-                        <Dialog open={open} onClose={() => setOpen(false)}>
-                            <DialogTitle>AcceptOrder</DialogTitle>
-                            <DialogContent>
-                                <TextField 
-                                    autoFocus
-                                    margin="dense"
-                                    id="orderId"
-                                    label="Order Id"
-                                    type="text"
-                                    fullWidth
-                                />
-                            </DialogContent>
-                            <DialogActions>
-                                <button onClick={() => setOpen(false)} className="btn btn_blue_h46 w_100">
-                                    Cancel
-                                </button>
-                                <button onClick={acceptOrder} className="btn btn_blue_h46 w_100">
-                                    Accept Order
-                                </button>
-                            </DialogActions>
-                        </Dialog>
+                            <Dialog open={open} onClose={() => setOpen(false)}>
+                                <DialogTitle>AcceptOrder</DialogTitle>
+                                <DialogContent>
+                                    <TextField 
+                                        autoFocus
+                                        margin="dense"
+                                        id="orderId"
+                                        label="Order Id"
+                                        type="text"
+                                        fullWidth
+                                    />
+                                </DialogContent>
+                                <DialogActions>
+                                    <button onClick={() => setOpen(false)} className="btn btn_blue_h46 w_100">
+                                        Cancel
+                                    </button>
+                                    <button onClick={acceptOrder} className="btn btn_blue_h46 w_100">
+                                        Accept Order
+                                    </button>
+                                </DialogActions>
+                            </Dialog>
                         </div>
                         {/* <!--// 본문 --> */}
                     </div>

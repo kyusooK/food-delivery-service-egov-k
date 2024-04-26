@@ -67,13 +67,6 @@ function EgovNoticeEdit(props) {
             formData.append(key, boardDetail[key]);
             //console.log("boardDetail [%s] ", key, boardDetail[key]);
         }
-
-        // if (bbsFormVaildator(formData)) {
-            const requestOptions = {
-                method: modeInfo.method,
-                body: formData
-            }
-    
             const entity = {
                 orderId: boardDetail.orderId,
                 restaurantId: boardDetail.restaurantId,
